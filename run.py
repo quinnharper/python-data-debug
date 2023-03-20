@@ -1,3 +1,7 @@
+from bokeh.layouts import column
+from bokeh.models import ColumnDataSource, RangeTool
+from bokeh.plotting import figure, show
+from bokeh.palettes import Spectral4
 import pandas
 
 def run():
@@ -20,10 +24,18 @@ def run():
     ]
 
     # Load data into a pandas dataframe.
-    data = pandas.read_csv("data.csv", usecols=[1,2,3,4,5], dtype=float, header=None, names=COLUMN_NAMES)
+    data = pandas.read_csv("data.csv", dtype=float, header=None, names=COLUMN_NAMES, parse_dates=["time"], index_col="time")
 
     # Calculate averages by column, ignoring NaN values.
     means = data.mean(axis=0, skipna=True, numeric_only=True)
+
+    # Calculate moving averages over days, quarters and years.
+    daily_means = data.rolling(window="1d").mean()
+    quarterly_means= data.rolling(window="91d").mean()
+    yearly_means = data.rolling(window="365d").mean()
+
+    # Plot the data
+    plot_data(data)
 
     # Return the averages of each column
     return {
@@ -37,6 +49,41 @@ def run():
 def append_non_nan(column, value):
     if value == value:
         column.append(value)
+
+def plot_data(data):
+    dates = data.index
+
+    # Calculate moving averages over days, quarters and years.
+    daily_means = data.rolling(window="1d").mean()
+    quarterly_means= data.rolling(window="91d").mean()
+    yearly_means = data.rolling(window="365d").mean()
+
+    p = figure(height=300, width=800, tools="xpan", toolbar_location=None,
+        x_axis_type="datetime", x_axis_location="above",
+        background_fill_color="#efefef", x_range=(dates[0], dates[-1]), y_range=(-10,50))
+    p.line("time", "air_temperature", source=data, color=Spectral4[0], legend_label="Air Temperature")
+    p.line("time", "water_temperature", source=data, color=Spectral4[1], legend_label="Water Temperature")
+
+    p.yaxis.axis_label = "Temperature"
+
+    p.legend.location = "top_left"
+    p.legend.click_policy="hide"
+
+    select = figure(title="Drag the middle and edges of the selection box to change the range above",
+        height=130, width=800, y_range=p.y_range,
+        x_axis_type="datetime", y_axis_type=None,
+        tools="", toolbar_location=None, background_fill_color="#efefef")
+
+    range_tool = RangeTool(x_range=p.x_range, y_range=p.y_range)
+    range_tool.overlay.fill_color = "navy"
+    range_tool.overlay.fill_alpha = 0.2
+
+    select.line("time", "air_temperature", source=data, color=Spectral4[0])
+    select.line("time", "water_temperature", source=data, color=Spectral4[1])
+    select.ygrid.grid_line_color = None
+    select.add_tools(range_tool)
+
+    show(column(p, select))
 
 if __name__ == '__main__':
     import sys
