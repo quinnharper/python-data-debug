@@ -1,4 +1,4 @@
-import csv
+import pandas
 
 def run():
 
@@ -19,49 +19,19 @@ def run():
         "wind_speed"
     ]
 
-    # Load data from a local CSV file into a list of lists
-    data = []
-    with open('data.csv') as csvdata:
-        csv_reader = csv.reader(csvdata)
-        for row in csv_reader:
-            data.append(row)
+    # Load data into a pandas dataframe.
+    data = pandas.read_csv("data.csv", usecols=[1,2,3,4,5], dtype=float, header=None, names=COLUMN_NAMES)
 
-    # Turn all of the data into numerical values
-    # so we can take the average of each column
-    numeric_data = []
-    for row in data:
-        new_row = []
-        for value in row[1:]:
-            new_row.append(float(value))
-        numeric_data.append(new_row)
-
-    # Organize the data into columns
-    column_2 = []
-    column_3 = []
-    column_4 = []
-    column_5 = []
-    column_6 = []
-    for row in numeric_data:
-        append_non_nan(column_2, row[0])
-        append_non_nan(column_3, row[1])
-        append_non_nan(column_4, row[2])
-        append_non_nan(column_5, row[3])
-        append_non_nan(column_6, row[4])
-
-    # Calculate the average of each column
-    col_2_avg = sum(column_2) / len(column_2)
-    col_3_avg = sum(column_3) / len(column_3)
-    col_4_avg = sum(column_4) / len(column_4)
-    col_5_avg = sum(column_5) / len(column_5)
-    col_6_avg = sum(column_6) / len(column_6)
+    # Calculate averages by column, ignoring NaN values.
+    means = data.mean(axis=0, skipna=True, numeric_only=True)
 
     # Return the averages of each column
     return {
-        'humidity': col_2_avg,
-        'salinity': col_3_avg,
-        'air_temperature': col_4_avg,
-        'water_temperature': col_5_avg,
-        'wind_speed': col_6_avg
+        'humidity': means[0],
+        'salinity': means[1],
+        'air_temperature': means[2],
+        'water_temperature': means[3],
+        'wind_speed': means[4]
     }
 
 def append_non_nan(column, value):
