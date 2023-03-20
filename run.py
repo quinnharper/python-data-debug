@@ -1,3 +1,5 @@
+import csv
+
 def run():
 
     # Mapping column names to the input data.
@@ -29,7 +31,7 @@ def run():
     numeric_data = []
     for row in data:
         new_row = []
-        for value in row:
+        for value in row[1:]:
             new_row.append(float(value))
         numeric_data.append(new_row)
 
@@ -40,11 +42,11 @@ def run():
     column_5 = []
     column_6 = []
     for row in numeric_data:
-        column_2.append(row[2])
-        column_3.append(row[3])
-        column_4.append(row[4])
-        column_5.append(row[5])
-        column_6.append(row[6])
+        append_non_nan(column_2, row[0])
+        append_non_nan(column_3, row[1])
+        append_non_nan(column_4, row[2])
+        append_non_nan(column_5, row[3])
+        append_non_nan(column_6, row[4])
 
     # Calculate the average of each column
     col_2_avg = sum(column_2) / len(column_2)
@@ -62,6 +64,9 @@ def run():
         'wind_speed': col_6_avg
     }
 
+def append_non_nan(column, value):
+    if value == value:
+        column.append(value)
 
 if __name__ == '__main__':
     import sys
@@ -75,14 +80,14 @@ if __name__ == '__main__':
     CORRECT_HUMIDITY = 80.8129
     CORRECT_SALINITY = 36.1433
     CORRECT_AIR_TEMPERATURE = 19.7976
-    CORRECT_WIND_TEMPERATURE = 34.1683
+    CORRECT_WATER_TEMPERATURE = 34.1683
     CORRECT_WIND_SPEED = 5.6777
 
     ANSWERS = {
         'humidity': CORRECT_HUMIDITY,
         'salinity': CORRECT_SALINITY,
         'air_temperature': CORRECT_AIR_TEMPERATURE,
-        'water_temperature':CORRECT_WIND_TEMPERATURE,
+        'water_temperature':CORRECT_WATER_TEMPERATURE,
         'wind_speed': CORRECT_WIND_SPEED,
     }
 
